@@ -7,19 +7,26 @@ use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
-    // Method lain tidak diubah...
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
         $events = Event::latest()->get();
         return view('events.index', compact('events'));
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
         return view('events.create');
     }
 
-    // --- PERHATIKAN PERUBAHAN DI SINI ---
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -32,10 +39,7 @@ class EventController extends Controller
             'quota' => 'required|integer|min:1',
         ]);
 
-        // KITA NONAKTIFKAN CARA LAMA (MASS ASSIGNMENT)
-        // Event::create($validated);
-
-        // KITA GUNAKAN CARA MANUAL UNTUK BYPASS MASS ASSIGNMENT
+        // Menggunakan cara manual untuk bypass Mass Assignment
         $event = new Event;
         $event->title = $validated['title'];
         $event->description = $validated['description'];
@@ -47,20 +51,27 @@ class EventController extends Controller
         $event->save(); // Simpan data ke database
 
         return redirect()->route('events.index')
-            ->with('success', 'Event berhasil dibuat dengan metode debug!');
+            ->with('success', 'Event berhasil dibuat!');
     }
-    // --- AKHIR DARI PERUBAHAN ---
-
+    /**
+     * Display the specified resource.
+     */
     public function show(Event $event)
     {
         return view('events.show', compact('event'));
     }
 
+    /**
+     * Show the form for editing the specified resource.
+     */
     public function edit(Event $event)
     {
         return view('events.edit', compact('event'));
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request, Event $event)
     {
         $validated = $request->validate([
@@ -72,14 +83,31 @@ class EventController extends Controller
             'price' => 'required|numeric|min:0',
             'quota' => 'required|integer|min:1',
         ]);
-        $event->update($validated);
+
+        // --- PERUBAHAN UTAMA ADA DI SINI ---
+        // Kita ganti $event->update($validated); dengan cara manual
+
+        $event->title = $validated['title'];
+        $event->description = $validated['description'];
+        $event->location = $validated['location'];
+        $event->date = $validated['date'];
+        $event->time = $validated['time'];
+        $event->price = $validated['price'];
+        $event->quota = $validated['quota'];
+        $event->save(); // Simpan perubahan ke database
+        // --- AKHIR DARI PERUBAHAN ---
+
         return redirect()->route('events.index')
             ->with('success', 'Event berhasil diperbarui!');
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy(Event $event)
     {
         $event->delete();
+
         return redirect()->route('events.index')
             ->with('success', 'Event berhasil dihapus!');
     }

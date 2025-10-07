@@ -1,92 +1,67 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <title>Detail Event - {{ $event->title }}</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 30px;
-      background-color: #f8f9fa;
-      color: #333;
-    }
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            Detail Event: {{ $event->title }}
+        </h2>
+    </x-slot>
 
-    .container {
-      background: white;
-      padding: 25px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      max-width: 600px;
-      margin: auto;
-    }
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-8 text-gray-900 dark:text-gray-100 space-y-6">
+                    
+                    {{-- Judul dan Deskripsi --}}
+                    <div>
+                        <h3 class="text-3xl font-bold border-b pb-3 mb-4 text-gray-800 dark:text-gray-100">{{ $event->title }}</h3>
+                        <p class="text-lg text-gray-600 dark:text-gray-300">{{ $event->description }}</p>
+                    </div>
 
-    h1 {
-      color: #007bff;
-      margin-bottom: 10px;
-    }
+                    {{-- Detail Event dalam Grid --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
+                        <div>
+                            <strong class="block text-sm font-medium text-gray-500">📍 Lokasi:</strong>
+                            <p class="text-lg">{{ $event->location }}</p>
+                        </div>
+                        <div>
+                            <strong class="block text-sm font-medium text-gray-500">🗓️ Tanggal & Waktu:</strong>
+                            <p class="text-lg">
+                                {{ \Carbon\Carbon::parse($event->date)->isoFormat('dddd, D MMMM Y') }}
+                                pukul {{ \Carbon\Carbon::parse($event->time)->format('H:i') }} WIB
+                            </p>
+                        </div>
+                        <div>
+                            <strong class="block text-sm font-medium text-gray-500">💰 Harga Tiket:</strong>
+                            <p class="text-lg">Rp{{ number_format($event->price, 0, ',', '.') }}</p>
+                        </div>
+                        <div>
+                            <strong class="block text-sm font-medium text-gray-500">🎟️ Sisa Kuota:</strong>
+                            <p class="text-lg">{{ $event->remainingQuota() }} / {{ $event->quota }}</p>
+                        </div>
+                    </div>
 
-    p {
-      margin: 8px 0;
-    }
+                    {{-- Form Booking --}}
+                    <div class="border-t pt-6">
+                        <form action="{{ route('bookings.store', $event->id) }}" method="POST">
+                            @csrf
+                            <div class="flex items-center gap-4">
+                                <label for="quantity" class="font-semibold">Jumlah Tiket:</label>
+                                <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{ $event->remainingQuota() }}" class="w-20 rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600">
+                                <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900">
+                                    Beli Tiket
+                                </button>
+                            </div>
+                        </form>
+                    </div>
 
-    .label {
-      font-weight: bold;
-    }
+                    {{-- Tombol Navigasi --}}
+                    <div class="border-t pt-6 flex items-center justify-between">
+                        <a href="{{ route('events.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:underline">
+                            &larr; Kembali ke Semua Event
+                        </a>
+                    </div>
 
-    .actions {
-      margin-top: 20px;
-    }
-
-    a, button {
-      text-decoration: none;
-      display: inline-block;
-      background-color: #007bff;
-      color: white;
-      padding: 8px 14px;
-      border-radius: 5px;
-      margin-right: 8px;
-      border: none;
-      cursor: pointer;
-    }
-
-    a:hover, button:hover {
-      background-color: #0056b3;
-    }
-
-    .delete-btn {
-      background-color: #dc3545;
-    }
-
-    .delete-btn:hover {
-      background-color: #b02a37;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>{{ $event->title }}</h1>
-
-    <p><span class="label">Tanggal:</span> {{ $event->date }}</p>
-    <p><span class="label">Lokasi:</span> {{ $event->location }}</p>
-    <p><span class="label">Harga Tiket:</span> Rp{{ number_format($event->price) }}</p>
-    <p><span class="label">Deskripsi:</span> {{ $event->description }}</p>
-
-    <div class="actions">
-      <a href="{{ route('events.edit', $event->id) }}">Edit Event</a>
-
-      <form action="{{ route('events.destroy', $event->id) }}" method="POST" style="display:inline;">
-        @csrf
-        @method('DELETE')
-        <button type="submit" class="delete-btn" onclick="return confirm('Yakin hapus event ini?')">Hapus</button>
-      </form>
-        <form action="{{ route('bookings.store', $event->id) }}" method="POST">
-            @csrf
-             <label>Jumlah Tiket:</label>
-                <input type="number" name="quantity" value="1" min="1" class="border rounded p-1">
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Beli Tiket</button>
-        </form>
-      <a href="{{ route('events.index') }}">← Kembali</a>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</body>
-</html>
+</x-app-layout>

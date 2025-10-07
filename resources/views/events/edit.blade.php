@@ -1,79 +1,84 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <title>Edit Event</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 30px;
-      background-color: #f8f9fa;
-    }
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            {{ __('Edit Event: ') . $event->title }}
+        </h2>
+    </x-slot>
 
-    h1 { color: #333; }
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
+                    
+                    @if ($errors->any())
+                        <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                            <strong class="font-bold">Oops! Ada yang salah.</strong>
+                            <ul class="mt-2 list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
 
-    form {
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      width: 400px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
+                    <form action="{{ route('events.update', $event->id) }}" method="POST">
+                        @csrf
+                        @method('PUT') {{-- PENTING: Method untuk update --}}
+                        
+                        <!-- Title -->
+                        <div class="mb-4">
+                            <label for="title" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Judul Event</label>
+                            <input type="text" name="title" id="title" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600" value="{{ old('title', $event->title) }}" required>
+                        </div>
 
-    label { display: block; margin-top: 10px; }
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label for="description" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Deskripsi</label>
+                            <textarea name="description" id="description" rows="4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600" required>{{ old('description', $event->description) }}</textarea>
+                        </div>
 
-    input, textarea {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
+                        <!-- Location -->
+                        <div class="mb-4">
+                            <label for="location" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Lokasi</label>
+                            <input type="text" name="location" id="location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600" value="{{ old('location', $event->location) }}" required>
+                        </div>
 
-    button {
-      margin-top: 15px;
-      background-color: #28a745;
-      color: white;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
+                        <!-- Date and Time -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="date" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Tanggal</label>
+                                <input type="date" name="date" id="date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600" value="{{ old('date', $event->date) }}" required>
+                            </div>
+                            <div>
+                                <label for="time" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Waktu</label>
+                                <input type="time" name="time" id="time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600" value="{{ old('time', $event->time) }}" required>
+                            </div>
+                        </div>
 
-    button:hover { background-color: #218838; }
+                        <!-- Price and Quota -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="price" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Harga (Rp)</label>
+                                <input type="number" name="price" id="price" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600" value="{{ old('price', $event->price) }}" required min="0">
+                            </div>
+                            <div>
+                                <label for="quota" class="block font-medium text-sm text-gray-700 dark:text-gray-300">Kuota</label>
+                                <input type="number" name="quota" id="quota" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600" value="{{ old('quota', $event->quota) }}" required min="1">
+                            </div>
+                        </div>
 
-    a {
-      display: inline-block;
-      margin-top: 15px;
-      color: #555;
-    }
-  </style>
-</head>
-<body>
-  <h1>Edit Event</h1>
-
-  <form action="{{ route('events.update', $event->id) }}" method="POST">
-    @csrf
-    @method('PUT')
-
-    <label>Judul Event</label>
-    <input type="text" name="title" value="{{ $event->title }}" required>
-
-    <label>Tanggal</label>
-    <input type="date" name="date" value="{{ $event->date }}" required>
-
-    <label>Lokasi</label>
-    <input type="text" name="location" value="{{ $event->location }}" required>
-
-    <label>Harga Tiket (Rp)</label>
-    <input type="number" name="price" min="0" value="{{ $event->price }}" required>
-
-    <label>Deskripsi</label>
-    <textarea name="description" rows="4">{{ $event->description }}</textarea>
-
-    <button type="submit">Update</button>
-  </form>
-
-  <a href="{{ route('events.index') }}">← Kembali ke daftar event</a>
-</body>
-</html>
+                        <!-- Submit Button -->
+                        <div class="flex items-center justify-end mt-6">
+                            <a href="{{ route('events.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
+                                Batal
+                            </a>
+                            <button type="submit" class="ml-4 inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
+                                Update Event
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</x-app-layout>
