@@ -36,6 +36,7 @@ Route::middleware(['auth'])->group(function () {
     // User transactions
     Route::get('transactions', [\App\Http\Controllers\TransactionController::class, 'index'])->name('transactions.index');
     Route::get('transactions/{transaction}', [\App\Http\Controllers\TransactionController::class, 'show'])->name('transactions.show');
+    Route::post('transactions/{product}', [\App\Http\Controllers\TransactionController::class, 'process'])->name('transactions.process');
 
     // Reviews for events
     Route::post('events/{event}/reviews', [ReviewController::class, 'store'])->name('events.reviews.store');

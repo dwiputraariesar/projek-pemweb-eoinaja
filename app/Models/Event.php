@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
+use App\Models\Ticket;
 
 /**
  * App\Models\Event
@@ -66,6 +67,11 @@ class Event extends Model
     public function reviews()
     {
         return $this->hasMany(Review::class);
+    }
+
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
     }
 }
 

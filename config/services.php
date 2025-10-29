@@ -34,5 +34,12 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    
+     'payment' => [
+        'api_key' => env('PAYMENT_API_KEY'),
+        'base_url' => env('PAYMENT_BASE_URL'),
+        'webhook_secret' => env('PAYMENT_WEBHOOK_SECRET'),
+        'expired_hours' => env('PAYMENT_EXPIRED_HOURS', 24),
+    ],
 
 ];
