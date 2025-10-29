@@ -41,7 +41,8 @@ class Event extends Model
     ];
 
     /**
-     * Get the bookings for the event.
+     * Relasi ke Booking
+     * 1 Event bisa punya banyak Booking
      */
     public function bookings()
     {
@@ -49,37 +50,22 @@ class Event extends Model
     }
 
     /**
-     * Ticket types for this event.
-     */
-    public function tickets()
-    {
-        return $this->hasMany(Ticket::class);
-    }
-
-    /**
-     * Reviews left for the event.
-     */
-    public function reviews()
-    {
-        return $this->hasMany(\App\Models\Review::class);
-    }
-
-    /**
-     * The organizer (owner) of the event.
-     */
-    public function organizer()
-    {
-        return $this->belongsTo(User::class, 'organizer_id');
-    }
-
-    /**
-     * Calculate the remaining quota for the event.
+     * Cek sisa kuota event
      */
     public function remainingQuota()
     {
-        // Menghitung jumlah tiket yang sudah di-booking
-        $booked = $this->bookings()->sum('quantity');
+        // Menghitung hanya booking yang statusnya 'paid' atau 'success'
+        $booked = $this->bookings()->whereIn('status', ['paid', 'success'])->sum('quantity');
         return $this->quota - $booked;
+    }
+
+    /**
+     * Relasi: Satu event bisa memiliki banyak ulasan.
+     * (INI BAGIAN YANG BARU DITAMBAHKAN)
+     */
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
     }
 }
 

@@ -2,38 +2,54 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Event;
-use App\Models\Ticket;
+use App\Models\Booking;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TicketController extends Controller
 {
-    public function __construct()
+    /**
+     * Menampilkan daftar semua tiket yang dimiliki oleh user yang sedang login.
+     */
+    public function index()
     {
-        $this->middleware('auth');
+        $bookings = Booking::where('user_id', Auth::id())
+                            ->with('event') // Eager load data event untuk efisiensi
+                            ->latest()
+                            ->get();
+
+        // Nanti kita akan membuat view 'tickets.index' untuk menampilkan ini
+        return view('tickets.index', compact('bookings'));
     }
 
     /**
-     * Store a new ticket type for an event.
+     * Menampilkan detail satu tiket, termasuk QR code.
      */
-    public function store(Request $request, Event $event)
+    public function show(Booking $booking)
     {
-        // Only organizer or admin
-        $this->authorize('update', $event);
+        // PENTING: Pastikan user hanya bisa melihat tiket miliknya sendiri.
+        $this->authorize('view', $booking);
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
-        ]);
+        // Nanti kita akan membuat view 'tickets.show'
+        return view('tickets.show', compact('booking'));
+    }
 
-        Ticket::create([
-            'event_id' => $event->id,
-            'name' => $validated['name'],
-            'price' => $validated['price'],
-            'stock' => $validated['stock'],
-        ]);
+    /**
+     * Membatalkan booking.
+     */
+    public function destroy(Booking $booking)
+    {
+        // PENTING: Pastikan user hanya bisa membatalkan tiket miliknya.
+        $this->authorize('delete', $booking);
 
-        return redirect()->back()->with('success', 'Tipe tiket berhasil ditambahkan.');
+        // Logika bisnis: Tiket tidak bisa dibatalkan jika event sudah lewat.
+        if ($booking->event->date < now()) {
+            return back()->with('error', 'Tidak dapat membatalkan booking untuk event yang sudah berlalu.');
+        }
+
+        // Ubah status booking menjadi 'cancelled'
+        $booking->update(['status' => 'cancelled']);
+
+        return redirect()->route('tickets.index')->with('success', 'Booking berhasil dibatalkan.');
     }
 }

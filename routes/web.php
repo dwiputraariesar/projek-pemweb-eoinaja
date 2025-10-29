@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\BookingController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -53,8 +53,26 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // 💳 Booking & Pembayaran Dummy
+    Route::post('/events/{event}/book', [BookingController::class, 'store'])->name('bookings.store');
+    Route::get('/bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
+
+    // 🎫 Halaman untuk melihat semua tiket yang dimiliki user
+    Route::get('/my-tickets', [\App\Http\Controllers\TicketController::class, 'index'])->name('tickets.index');
+
+    // 📄 Halaman untuk melihat detail satu tiket (termasuk QR Code)
+    Route::get('/my-tickets/{booking}', [\App\Http\Controllers\TicketController::class, 'show'])->name('tickets.show');
+
+    // ❌ Aksi untuk membatalkan booking
+    Route::delete('/my-tickets/{booking}', [\App\Http\Controllers\TicketController::class, 'destroy'])->name('tickets.cancel');
+
+    // ⭐ Aksi untuk menyimpan ulasan & rating
+    Route::post('/events/{event}/review', [\App\Http\Controllers\ReviewController::class, 'store'])->name('reviews.store');
+
 });
 
+// 🧾 Route otentikasi (login, register, dll)
 require __DIR__.'/auth.php';
 
 // Admin routes example (protected by auth; controllers enforce role checks)

@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('bookings', function (Blueprint $table) {
+        Schema::create('reviews', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('event_id')->constrained()->onDelete('cascade');
-            $table->integer('quantity');
-            $table->decimal('total_price', 10, 2);
-            $table->string('status')->default('paid');
-            $table->string('qr_code_path')->nullable();
+            $table->tinyInteger('rating')->unsigned(); // Rating dari 1 sampai 5
+            $table->text('comment')->nullable(); // Komentar ulasan
             $table->timestamps();
         });
     }
@@ -28,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('bookings');
+        Schema::dropIfExists('reviews');
     }
 };

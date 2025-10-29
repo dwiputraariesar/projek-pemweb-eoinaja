@@ -1,60 +1,69 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Tiket Event - {{ $booking->event->title }}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      margin: 30px;
+    }
+    .container {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin: auto;
+      text-align: center;
+    }
+    h1 {
+      color: #007bff;
+      margin-bottom: 10px;
+    }
+    p { margin: 8px 0; }
+    .label { font-weight: bold; }
+    .qr {
+      margin: 20px 0;
+    }
+    .btn {
+      display: inline-block;
+      text-decoration: none;
+      background-color: #007bff;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 6px;
+    }
+    .btn:hover { background-color: #0056b3; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tiket Kamu 🎫</h1>
 
-@section('content')
-<div class="container mx-auto py-6">
-    <h1 class="text-2xl font-bold mb-4">Booking #{{ $booking->id }}</h1>
+    <p><span class="label">Event:</span> {{ $booking->event->title }}</p>
+    <p><span class="label">Tanggal:</span> {{ $booking->event->date }}</p>
+    <p><span class="label">Lokasi:</span> {{ $booking->event->location }}</p>
+    <p><span class="label">Jumlah Tiket:</span> {{ $booking->quantity }}</p>
+    <p><span class="label">Total Bayar:</span> Rp{{ number_format($booking->total_price) }}</p>
+    <p><span class="label">Status:</span> 
+      <span style="color:{{ $booking->status === 'paid' ? 'green' : 'red' }}">
+        {{ ucfirst($booking->status) }}
+      </span>
+    </p>
 
-    <x-card class="mb-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <p class="text-sm text-gray-500">Event</p>
-                <h2 class="text-lg font-semibold">{{ $booking->event->title }}</h2>
+    <div class="qr">
+      <p><strong>QR Code Tiket:</strong></p>
+      @if($booking->qr_code_path)
+        <img src="{{ asset('storage/' . $booking->qr_code_path) }}" alt="QR Code Tiket" width="200">
+      @else
+        <p style="color:gray;">QR Code belum tersedia.</p>
+      @endif
+    </div>
 
-                <p class="mt-2 text-sm text-gray-500">Tipe Tiket</p>
-                <div class="text-base">{{ $booking->ticket->name }}</div>
-
-                <div class="mt-3">
-                    <p class="text-sm text-gray-500">Jumlah</p>
-                    <div class="font-medium">{{ $booking->quantity }}</div>
-                </div>
-            </div>
-
-            <div>
-                <p class="text-sm text-gray-500">Status</p>
-                <div class="mt-1">
-                    <x-badge color="blue">{{ ucfirst($booking->status) }}</x-badge>
-                </div>
-
-                @if($booking->status === 'paid' && $booking->qr_code)
-                    <div class="mt-6">
-                        <h3 class="font-semibold">Your QR Ticket</h3>
-                        <div class="mt-3">
-                            <object type="image/svg+xml" data="{{ asset('storage/'.$booking->qr_code) }}" class="w-48 h-48 md:w-64 md:h-64">Your browser does not support SVG</object>
-                        </div>
-                        <div class="mt-2">
-                            <a href="{{ asset('storage/'.$booking->qr_code) }}" class="inline-block mr-3"><x-button variant="secondary">Download SVG</x-button></a>
-                            <a href="{{ route('tickets.download', $booking) ?? asset('storage/'.$booking->qr_code) }}"><x-button variant="primary">Download PDF</x-button></a>
-                        </div>
-                    </div>
-                @endif
-
-                <div class="mt-6 space-y-2">
-                    @if(auth()->id() === $booking->user_id && $booking->status === 'pending')
-                        <form method="POST" action="{{ route('bookings.pay', $booking) }}">
-                            @csrf
-                            <x-button variant="success">Pay (Mock)</x-button>
-                        </form>
-                    @endif
-
-                    @if((auth()->user()?->hasRole('Administrator') ?? false) || (auth()->id() === $booking->event->organizer_id))
-                        <form method="POST" action="{{ route('admin.bookings.checkin', $booking) }}">
-                            @csrf
-                            <x-button variant="primary">Check-in Attendee</x-button>
-                        </form>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </x-card>
-</div>
-@endsection
+    <a href="{{ route('dashboard') }}" class="btn">Kembali ke Dashboard</a>
+  </div>
+</body>
+</html>
