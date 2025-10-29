@@ -1,3 +1,53 @@
+<nav class="bg-white border-b border-gray-100 dark:bg-gray-800 dark:border-gray-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <div class="flex items-center gap-6">
+                <!-- Brand -->
+                <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
+                    <div class="h-10 w-10 bg-indigo-600 text-white rounded flex items-center justify-center font-bold">{{ strtoupper(substr(config('app.name','App'),0,1)) }}</div>
+                    <div class="text-lg font-semibold text-gray-800 dark:text-gray-100">{{ config('app.name', 'App') }}</div>
+                </a>
+
+                <div class="hidden md:flex items-center gap-4">
+                    <a href="{{ route('dashboard') }}" class="text-sm text-gray-700 hover:text-gray-900">Dashboard</a>
+                    <a href="{{ route('events.index') }}" class="text-sm text-gray-700 hover:text-gray-900">Events</a>
+                    @auth
+                        <a href="{{ route('bookings.index') }}" class="text-sm text-gray-700 hover:text-gray-900">My Bookings</a>
+                        <a href="{{ route('transactions.index') }}" class="text-sm text-gray-700 hover:text-gray-900">My Transactions</a>
+                    @endauth
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                @auth
+                    @php $user = auth()->user(); @endphp
+                    <div class="hidden sm:flex items-center gap-3">
+                        @if(method_exists($user,'hasRole') && $user->hasRole('Administrator'))
+                            <a href="{{ route('admin.bookings.index') }}" class="text-sm text-gray-600 hover:text-gray-800"><x-icon name="filter" class="h-5 w-5" /> Admin</a>
+                        @endif
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <a href="{{ route('profile.edit') }}" class="flex items-center gap-2 text-sm">
+                            <div class="h-8 w-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center">{{ strtoupper(substr($user->name,0,1)) }}</div>
+                            <div class="hidden sm:block text-sm text-gray-700">{{ $user->name }}</div>
+                        </a>
+
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="text-sm text-red-600">Logout</button>
+                        </form>
+                    </div>
+                @else
+                    <div class="flex items-center gap-3">
+                        <a href="{{ route('login') }}" class="text-sm text-gray-700 hover:text-gray-900">Log in</a>
+                        <a href="{{ route('register') }}" class="text-sm text-indigo-600 hover:text-indigo-700">Register</a>
+                    </div>
+                @endauth
+            </div>
+        </div>
+    </div>
+</nav>
 <nav x-data="{ open: false }" class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

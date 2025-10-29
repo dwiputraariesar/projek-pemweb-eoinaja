@@ -59,3 +59,37 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Local queue worker & troubleshooting
+
+If you rely on queued jobs (PDF/email sending, background tasks), you'll need a running queue worker. Here are quick steps and tips to run and debug the worker locally on Windows / PowerShell.
+
+1. Start the database queue driver (ensure `QUEUE_CONNECTION=database` in your `.env`) and create the jobs table if missing:
+
+```powershell
+php artisan queue:table
+php artisan migrate
+```
+
+2. Run the worker in a separate terminal:
+
+```powershell
+php artisan queue:work --sleep=3 --tries=3
+```
+
+3. If the worker exits with an error (exit code 1), inspect the Laravel log at `storage/logs/laravel.log` for the full exception and stack trace. You can follow the log with:
+
+```powershell
+Get-Content storage\logs\laravel.log -Wait
+```
+
+4. Common causes and fixes:
+- Missing dependencies (e.g., `ext-gd` for QR generation, or `ext-zip`) — install the required PHP extensions.
+- File permission issues writing to `storage/` or `vendor/` — ensure your user has write permissions.
+- Mail driver misconfiguration causing exceptions during send — set `MAIL_MAILER=log` or use Mailtrap for local testing.
+
+5. Helpful developer tips:
+- For Stripe webhooks testing, use the Stripe CLI or `ngrok` to expose your local `/api/webhooks/stripe` endpoint and set `STRIPE_WEBHOOK_SECRET` in `.env`.
+- If jobs silently fail, check `storage/logs/laravel.log` and the job-specific logs (SendTicketPdfJob now logs errors automatically).
+
+If you'd like, I can add a short artisan command or small health endpoint to check queue status and job counts.

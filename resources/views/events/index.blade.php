@@ -6,110 +6,53 @@
     </x-slot>
 
     <div class="py-6 max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-
-            <style>
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-top: 15px;
-                    background: white;
-                }
-
-                table, th, td {
-                    border: 1px solid #ddd;
-                }
-
-                th {
-                    background-color: #007bff;
-                    color: white;
-                    text-align: left;
-                    padding: 10px;
-                }
-
-                td {
-                    padding: 10px;
-                    vertical-align: middle;
-                }
-
-                .btn-create {
-                    display: inline-block;
-                    margin-bottom: 10px;
-                    background-color: #28a745;
-                    color: white;
-                    padding: 8px 12px;
-                    border-radius: 5px;
-                    text-decoration: none;
-                }
-
-                .btn-create:hover {
-                    background-color: #218838;
-                }
-
-                .btn-action {
-                    margin-right: 5px;
-                    color: #007bff;
-                    text-decoration: none;
-                }
-
-                .btn-action:hover {
-                    text-decoration: underline;
-                }
-
-                button {
-                    background: none;
-                    border: none;
-                    color: red;
-                    cursor: pointer;
-                    font-size: 14px;
-                }
-
-                button:hover {
-                    text-decoration: underline;
-                }
-            </style>
-
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Daftar Event</h1>
-
-            <a href="{{ route('events.create') }}" class="btn-create">+ Tambah Event</a>
-
-            @if(session('success'))
-                <p class="text-green-600 mt-2">{{ session('success') }}</p>
-            @endif
-
-            @if($events->isEmpty())
-                <p class="mt-4 text-gray-600">Tidak ada event tersedia.</p>
-            @else
-                <table class="mt-4">
-                    <tr>
-                        <th>Judul</th>
-                        <th>Tanggal</th>
-                        <th>Lokasi</th>
-                        <th>Harga</th>
-                        <th>Aksi</th>
-                    </tr>
-
-                    @foreach($events as $event)
-                    <tr>
-                        <td>{{ $event->title }}</td>
-                        <td>{{ \Carbon\Carbon::parse($event->date)->format('d M Y') }}</td>
-                        <td>{{ $event->location }}</td>
-                        <td>Rp{{ number_format($event->price, 0, ',', '.') }}</td>
-                        <td>
-                            <a href="{{ route('events.show', $event->id) }}" class="btn-action">Lihat</a> |
-                            <a href="{{ route('events.edit', $event->id) }}" class="btn-action">Edit</a> |
-                            <form action="{{ route('events.destroy', $event->id) }}" method="POST"
-                                  onsubmit="return confirm('Yakin ingin menghapus event ini?')"
-                                  style="display:inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit">Hapus</button>
-                            </form>
-                        </td>
-                    </tr>
-                    @endforeach
-                </table>
-            @endif
+        <div class="flex items-center justify-between mb-4">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Daftar Event</h1>
+            <a href="{{ route('events.create') }}">
+                <x-button variant="success">+ Tambah Event</x-button>
+            </a>
         </div>
+
+        @if(session('success'))
+            <p class="text-green-600 mt-2">{{ session('success') }}</p>
+        @endif
+
+        @if($events->isEmpty())
+            <p class="mt-4 text-gray-600">Tidak ada event tersedia.</p>
+        @else
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                @foreach($events as $event)
+                    <x-card>
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-gray-100">{{ $event->title }}</h3>
+                                <p class="text-sm text-gray-600">{{ \Carbon\Carbon::parse($event->date)->format('d M Y') }} • {{ $event->location }}</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-lg font-medium text-gray-900 dark:text-gray-100">Rp{{ number_format($event->price, 0, ',', '.') }}</div>
+                                @php $avg = $event->reviews()->avg('rating'); @endphp
+                                <x-badge color="yellow">{{ $avg ? number_format($avg,1) . ' / 5' : '—' }}</x-badge>
+                            </div>
+                        </div>
+
+                        <p class="mt-4 text-gray-700 dark:text-gray-300">{{ Str::limit($event->description, 120) }}</p>
+
+                        <div class="mt-4 flex items-center justify-between">
+                            <div class="space-x-2">
+                                <a href="{{ route('events.show', $event->id) }}"><x-button variant="secondary">Lihat</x-button></a>
+                                <a href="{{ route('events.edit', $event->id) }}"><x-button variant="primary">Edit</x-button></a>
+                            </div>
+                            <div>
+                                <form action="{{ route('events.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus event ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <x-button variant="danger">Hapus</x-button>
+                                </form>
+                            </div>
+                        </div>
+                    </x-card>
+                @endforeach
+            </div>
+        @endif
     </div>
 </x-app-layout>
