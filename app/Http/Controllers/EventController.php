@@ -21,6 +21,8 @@ class EventController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', Event::class);
+
         return view('events.create');
     }
 
@@ -39,8 +41,11 @@ class EventController extends Controller
             'quota' => 'required|integer|min:1',
         ]);
 
-        // Menggunakan cara manual untuk bypass Mass Assignment
-        $event = new Event;
+    // Authorize creation
+    $this->authorize('create', Event::class);
+
+    // Menggunakan cara manual untuk bypass Mass Assignment
+    $event = new Event;
         $event->title = $validated['title'];
         $event->description = $validated['description'];
         $event->location = $validated['location'];
@@ -48,6 +53,10 @@ class EventController extends Controller
         $event->time = $validated['time'];
         $event->price = $validated['price'];
         $event->quota = $validated['quota'];
+        // set organizer to current user when available
+        if (auth()->check()) {
+            $event->organizer_id = auth()->id();
+        }
         $event->save(); // Simpan data ke database
 
         return redirect()->route('events.index')
@@ -58,7 +67,20 @@ class EventController extends Controller
      */
     public function show(Event $event)
     {
-        return view('events.show', compact('event'));
+    // eager load reviews with user and tickets
+    /** @var \App\Models\Event $event */
+    $event->load(['reviews.user', 'tickets']);
+
+    $averageRating = $event->reviews()->avg('rating');
+
+        $canReview = false;
+        if (auth()->check()) {
+            $user = auth()->user();
+            /** @var \App\Models\User $user */
+            $canReview = $user->hasRole('Administrator') || $user->bookings()->where('event_id', $event->getKey())->exists();
+        }
+
+        return view('events.show', compact('event', 'averageRating', 'canReview'));
     }
 
     /**
@@ -66,6 +88,8 @@ class EventController extends Controller
      */
     public function edit(Event $event)
     {
+        $this->authorize('update', $event);
+
         return view('events.edit', compact('event'));
     }
 
@@ -74,6 +98,8 @@ class EventController extends Controller
      */
     public function update(Request $request, Event $event)
     {
+        $this->authorize('update', $event);
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
@@ -106,6 +132,8 @@ class EventController extends Controller
      */
     public function destroy(Event $event)
     {
+        $this->authorize('delete', $event);
+
         $event->delete();
 
         return redirect()->route('events.index')

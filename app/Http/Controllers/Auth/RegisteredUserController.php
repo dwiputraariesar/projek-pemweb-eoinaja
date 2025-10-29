@@ -33,6 +33,7 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'role' => ['nullable', 'in:Attendee,Organizer'],
         ]);
 
         $user = User::create([
@@ -40,6 +41,16 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        // Assign role if spatie methods are available and role provided
+        if (method_exists($user, 'assignRole') && $request->filled('role')) {
+            $user->assignRole($request->role);
+        } else {
+            // default role
+            if (method_exists($user, 'assignRole')) {
+                $user->assignRole('Attendee');
+            }
+        }
 
         event(new Registered($user));
 
